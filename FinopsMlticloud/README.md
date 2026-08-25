@@ -1,24 +1,42 @@
 # Multicloud FinOps with Oracle Log Analytics
 
-Cloud cost data becomes hard to govern when it is scattered across providers,
-accounts, regions, SKU catalogs, and tag models. This project applies the
-[FOCUS](https://focus.finops.org/) cost and usage specification as a common
-language for cost observability across AWS and OCI.
-
-It follows Oracle's [multicloud FinOps article](https://blogs.oracle.com/observability/monitor-finops-multicloud-oracle-log-analytics)
-and its [AWS FOCUS data pipeline article](https://blogs.oracle.com/observability/observability-aws-finops-data-oracle-log-analytics).
+This project centralizes AWS and OCI FOCUS cost and usage data in Oracle Log Analytics, giving FinOps, engineering, and finance teams one shared view of cloud consumption.
 
 ![Oracle multicloud FinOps dashboard](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/finops_dashboard-1024x492.png)
 
 *Multicloud dashboard. Image © Oracle, linked from the referenced blog post.*
 
-## One cost-data contract
+## Business Value
 
-The dashboard is only as dependable as the normalized model beneath it.
-Providers can change FOCUS versions, omit optional columns, add extensions,
-and use different hierarchy and tag models. The parsers map each provider
-report to stable `MC_*` fields so saved searches, alarms, and dashboard widgets
-do not need to change with every upstream report revision.
+Multicloud cost management is difficult when providers expose different account hierarchies, service names, SKUs, regions, and tags. FOCUS provides a common cost and usage specification; Oracle Log Analytics turns that data into one searchable and visual FinOps layer.
+
+Stakeholders can move from a cost increase to the responsible provider, service, region, resource, SKU, and ownership group. Executives gain a clear view of spend trends and budget risk; application owners can investigate their workloads; and finance teams can support showback, chargeback, allocation, and variance analysis.
+
+The dashboard also supports cost-driver analysis, anomaly investigation, and environment- or group-based filtering. The same normalized fields can be used for saved searches, alerts, and longer-term cost retention.
+
+![Oracle Logan AI view](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/loganai.gif)
+
+*Natural-language exploration with Logan AI. Image © Oracle, linked from the referenced blog post.*
+
+## Dashboard Architecture
+
+AWS Billing and Cost Management Data Exports publish FOCUS data to Amazon S3. Because exports can be refreshed during a billing period and contain cumulative records, the scheduled curation function selects the latest CSV or CSV.GZ export, filters it to a single usage date, and publishes one deterministic object: `aws_focus_daily__usage_date=YYYY-MM-DD.csv.gz`.
+
+The curated AWS file lands in OCI Object Storage, where the `FOCUS_AWS` source and a Log Analytics object collection rule ingest it. OCI FOCUS data is parsed through `FOCUS_OCI`. Both providers then use the same normalized model beneath the `FinOps_MC` dashboard.
+
+![Oracle reference architecture](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/Architecture.jpg)
+
+*Reference architecture. Image © Oracle, linked from the referenced blog post.*
+
+![Oracle AWS FOCUS pipeline](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/06/image-10.png)
+
+*AWS FOCUS pipeline. Image © Oracle, linked from the referenced blog post.*
+
+The Terraform stack in [`terraform/`](terraform/) creates the OCI collection environment, required OCI policies, the scoped Object Storage write path, and the scheduled AWS Lambda curation function. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
+
+## Normalization Fields
+
+The parsers map each provider report to stable `MC_*` fields. This separates the dashboard from provider-specific report versions, optional fields, and extensions.
 
 | Normalized field | Meaning |
 | --- | --- |
@@ -31,89 +49,34 @@ do not need to change with every upstream report revision.
 | `MC_SKU` | SKU or metering dimension |
 | `MC_ENVIRONMENT` | Environment classification |
 | `MC_GROUP` | Allocation or ownership group |
+| `MC_USAGE` | Usage measure exposed by the AWS parser |
 
-The AWS parser also exposes `MC_USAGE`. The OCI parser includes `MC_GROUP`; an
-equivalent AWS allocation mapping can be added when business-unit reporting is
-needed. Owner, application, cost centre, tags, and commitment-discount detail
-can be added without changing the shared dashboard contract.
+The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping when business-unit reporting is needed. Owner, application, cost centre, tags, and commitment-discount detail can be added without changing the shared dashboard contract.
 
 ![Oracle normalized FinOps fields](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/06/finops_normdata-1024x366.png)
 
 *Normalized field model. Image © Oracle, linked from the referenced blog post.*
 
-## From AWS export to cost observability
-
-AWS Billing and Cost Management Data Exports deliver FOCUS data to Amazon S3.
-That delivery is source data, not a reliable daily fact table: an export can be
-refreshed during a billing period and can include cumulative or overlapping
-records. The curation function selects the latest available export, filters it
-to one usage date, and publishes exactly one object named
-`aws_focus_daily__usage_date=YYYY-MM-DD.csv.gz`.
-
-OCI Object Storage is the governed handoff into Log Analytics. The collection
-rule associates the objects with the `FOCUS_AWS` source, Log Analytics parses
-them, and the shared dashboard makes the data searchable and visual.
-
-![Oracle reference architecture](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/Architecture.jpg)
-
-*Reference architecture. Image © Oracle, linked from the referenced blog post.*
-
-![Oracle AWS FOCUS pipeline](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/06/image-10.png)
-
-*AWS FOCUS pipeline. Image © Oracle, linked from the referenced blog post.*
-
-The separation is what makes the pattern extensible. Adding a provider becomes
-an extraction-and-mapping task while the analytics layer continues to work with
-the same normalized dimensions. It supports executives tracking trend and
-budget risk, application owners investigating their services and resources,
-and finance teams running allocation, showback, or chargeback analysis.
-
-![Oracle Logan AI view](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/loganai.gif)
-
-*Natural-language exploration with Logan AI. Image © Oracle, linked from the
-referenced blog post.*
-
-## Repository content
+## Included Assets
 
 | Asset | Purpose |
 | --- | --- |
 | [`src/FOCUS_AWS.xml`](src/FOCUS_AWS.xml) | Log Analytics `FOCUS_AWS` parser and source export |
 | [`src/FOCUS_OCI.xml`](src/FOCUS_OCI.xml) | Log Analytics `FOCUS_OCI` parser and source export |
 | [`src/FinOps_MC.json`](src/FinOps_MC.json) | `FinOps_MC` dashboard export; six tiles and six saved searches |
-| [`terraform/`](terraform/) | AWS-to-OCI collection environment, policies, and curation function |
-| [`img/`](img/) | Attribution for the Oracle images embedded above |
-| [`video/`](video/) | Place demonstrations here |
+| [`terraform/`](terraform/) | Resource Manager-ready infrastructure stack and AWS curation function |
+| [`terraform/finops-mc-oci-stack.zip`](terraform/finops-mc-oci-stack.zip) | Deployable OCI Resource Manager package |
 
-The three Log Analytics files are kept unchanged so they remain portable
-imports. The exact Oracle images above are linked directly from their original
-blog locations rather than copied into this repository.
+## Deploy on Oracle Cloud
 
-## Terraform environment
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://raw.githubusercontent.com/esciunzi/projects/finOpsMC/FinopsMlticloud/terraform/finops-mc-oci-stack.zip)
 
-<!-- Replace REPLACE_WITH_GITHUB_OWNER and REPLACE_WITH_GITHUB_REPOSITORY after publishing this repository. -->
-[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://raw.githubusercontent.com/REPLACE_WITH_GITHUB_OWNER/REPLACE_WITH_GITHUB_REPOSITORY/main/terraform/finops-mc-oci-stack.zip)
+The button opens OCI Resource Manager's **Create stack** page using the published stack ZIP from the `finOpsMC` branch.
 
-[`terraform/`](terraform/) provisions the AWS-to-OCI environment: a private
-OCI bucket with object events, a 48-hour OCI stream, a Log Analytics log group
-and `LIVE` collection rule, OCI dynamic-group and administrator policies, a
-scoped write-only Object Storage pre-authenticated request (PAR), and the AWS
-Lambda role and scheduled curation function.
+## References
 
-The configuration expects the `FOCUS_AWS` Log Analytics source to already
-exist, because content exports and dashboard imports are not Terraform
-resources. The function is intentionally limited to CSV and CSV.GZ input,
-matching the supplied parser. Its source prefix, schedule, delivery lag, and
-PAR expiry are configurable in
-[`terraform/terraform.tfvars.example`](terraform/terraform.tfvars.example).
-Treat Terraform state as sensitive because it contains the PAR URL.
-
-The linked [`terraform/finops-mc-oci-stack.zip`](terraform/finops-mc-oci-stack.zip)
-has the Terraform files at its root, ready for OCI Resource Manager. Update the
-two GitHub placeholders in the button URL with the published repository owner
-and name; OCI Resource Manager then opens its **Create stack** page with this
-package preselected.
-
-Oracle documents that a bucket can have one `LIVE` or `HISTORIC_LIVE` object
-collection rule, and that the supporting stream must have a public endpoint.
-See [Collect Logs from Your OCI Object Storage Bucket](https://docs.oracle.com/en-us/iaas/log-analytics/doc/collect-logs-from-your-oci-object-storage-bucket.html)
-for operational limits and service behaviour.
+- [Monitoring FinOps Data Across Multicloud with Oracle Log Analytics](https://blogs.oracle.com/observability/monitor-finops-multicloud-oracle-log-analytics)
+- [Observability for AWS FinOps Data with Oracle Log Analytics](https://blogs.oracle.com/observability/observability-aws-finops-data-oracle-log-analytics)
+- [FOCUS specification](https://focus.finops.org/)
+- [Collect Logs from Your OCI Object Storage Bucket](https://docs.oracle.com/en-us/iaas/log-analytics/doc/collect-logs-from-your-oci-object-storage-bucket.html)
+- [Deploy to Oracle Cloud button documentation](https://docs.oracle.com/en-us/iaas/Content/ResourceManager/Tasks/deploybutton.htm)
