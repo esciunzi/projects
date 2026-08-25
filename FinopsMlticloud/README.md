@@ -2,7 +2,7 @@
 
 This project centralizes AWS and OCI FOCUS cost and usage data in Oracle Log Analytics, giving FinOps, engineering, and finance teams one shared view of cloud consumption.
 
-![Oracle multicloud FinOps dashboard](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/finops_dashboard-1024x492.png)
+![Oracle multicloud FinOps dashboard](img/finops-dashboard.png)
 
 *Multicloud dashboard. Image © Oracle, linked from the referenced blog post.*
 
@@ -14,7 +14,11 @@ Stakeholders can move from a cost increase to the responsible provider, service,
 
 The dashboard also supports cost-driver analysis, anomaly investigation, and environment- or group-based filtering. The same normalized fields can be used for saved searches, alerts, and longer-term cost retention.
 
-![Oracle Logan AI view](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/loganai.gif)
+![Oracle cost anomaly view](img/cost-anomaly.png)
+
+*Cost anomaly analysis. Image © Oracle, supplied from the referenced blog post.*
+
+![Oracle Logan AI view](img/logan-ai.gif)
 
 *Natural-language exploration with Logan AI. Image © Oracle, linked from the referenced blog post.*
 
@@ -24,13 +28,13 @@ AWS Billing and Cost Management Data Exports publish FOCUS data to Amazon S3. Be
 
 The curated AWS file lands in OCI Object Storage, where the `FOCUS_AWS` source and a Log Analytics object collection rule ingest it. OCI FOCUS data is parsed through `FOCUS_OCI`. Both providers then use the same normalized model beneath the `FinOps_MC` dashboard.
 
-![Oracle reference architecture](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/07/Architecture.jpg)
+![Oracle reference architecture](img/architecture.png)
 
 *Reference architecture. Image © Oracle, linked from the referenced blog post.*
 
-![Oracle AWS FOCUS pipeline](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/06/image-10.png)
+![Oracle consumption widget](img/consumption-widget.png)
 
-*AWS FOCUS pipeline. Image © Oracle, linked from the referenced blog post.*
+*Consumption widget. Image © Oracle, supplied from the referenced blog post.*
 
 The Terraform stack in [`terraform/`](terraform/) creates the OCI collection environment, required OCI policies, the scoped Object Storage write path, and the scheduled AWS Lambda curation function. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
 
@@ -53,7 +57,7 @@ The parsers map each provider report to stable `MC_*` fields. This separates the
 
 The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping when business-unit reporting is needed. Owner, application, cost centre, tags, and commitment-discount detail can be added without changing the shared dashboard contract.
 
-![Oracle normalized FinOps fields](https://blogs.oracle.com/observability/wp-content/uploads/sites/47/2026/06/finops_normdata-1024x366.png)
+![Oracle normalized FinOps fields](img/normalized-finops-fields.png)
 
 *Normalized field model. Image © Oracle, linked from the referenced blog post.*
 
