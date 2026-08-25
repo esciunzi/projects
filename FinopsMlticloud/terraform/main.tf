@@ -19,6 +19,16 @@ data "archive_file" "focus_aws_content" {
   }
 }
 
+data "archive_file" "focus_oci_content" {
+  type        = "zip"
+  output_path = "${path.module}/focus_oci_content.zip"
+
+  source {
+    content  = file("${path.module}/content/FOCUS_OCI.xml")
+    filename = "FOCUS_OCI.xml"
+  }
+}
+
 resource "oci_log_analytics_namespace" "finops" {
   namespace      = local.oci_namespace
   compartment_id = var.compartment_ocid
@@ -52,6 +62,14 @@ resource "oci_log_analytics_log_analytics_log_group" "finops" {
 resource "oci_log_analytics_log_analytics_import_custom_content" "focus_aws" {
   namespace                  = local.oci_namespace
   import_custom_content_file = data.archive_file.focus_aws_content.output_path
+  is_overwrite               = true
+
+  depends_on = [oci_log_analytics_namespace.finops]
+}
+
+resource "oci_log_analytics_log_analytics_import_custom_content" "focus_oci" {
+  namespace                  = local.oci_namespace
+  import_custom_content_file = data.archive_file.focus_oci_content.output_path
   is_overwrite               = true
 
   depends_on = [oci_log_analytics_namespace.finops]
