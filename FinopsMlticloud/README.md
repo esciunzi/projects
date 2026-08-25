@@ -24,9 +24,9 @@ The dashboard also supports cost-driver analysis, anomaly investigation, and env
 
 ## Dashboard Architecture
 
-AWS Billing and Cost Management Data Exports publish FOCUS data to Amazon S3. Because exports can be refreshed during a billing period and contain cumulative records, the scheduled curation function selects the latest CSV or CSV.GZ export, filters it to a single usage date, and publishes one deterministic object: `aws_focus_daily__usage_date=YYYY-MM-DD.csv.gz`.
+AWS Billing and Cost Management Data Exports publish FOCUS data to Amazon S3. Make the required FOCUS CSV or CSV.GZ files available in the private OCI Object Storage bucket created by this stack. The stack deliberately does not create an AWS function, scheduled job, cross-cloud credential, or data-transformation path; report delivery to OCI is owned by the existing export process.
 
-The curated AWS file lands in OCI Object Storage, where the `FOCUS_AWS` source and a Log Analytics object collection rule ingest it. OCI FOCUS data is parsed through `FOCUS_OCI`. Both providers then use the same normalized model beneath the `FinOps_MC` dashboard.
+The AWS FOCUS report lands in OCI Object Storage, where the `FOCUS_AWS` source and a Log Analytics object collection rule ingest it. OCI FOCUS data is parsed through `FOCUS_OCI`. Both providers then use the same normalized model beneath the `FinOps_MC` dashboard.
 
 ![Oracle reference architecture](img/architecture.png)
 
@@ -36,7 +36,7 @@ The curated AWS file lands in OCI Object Storage, where the `FOCUS_AWS` source a
 
 *Consumption widget. Image © Oracle, supplied from the referenced blog post.*
 
-The Terraform stack in [`terraform/`](terraform/) creates the OCI collection environment, required OCI policies, the scoped Object Storage write path, and the scheduled AWS Lambda curation function. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
+The Terraform stack in [`terraform/`](terraform/) creates the OCI Object Storage bucket, onboards Log Analytics, imports `FOCUS_AWS` and the `FinOps_MC` dashboard, grants the required OCI policies, and enables a live Object Storage collection rule. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
 
 ## Normalization Fields
 
@@ -68,14 +68,24 @@ The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping whe
 | [`src/FOCUS_AWS.xml`](src/FOCUS_AWS.xml) | Log Analytics `FOCUS_AWS` parser and source export |
 | [`src/FOCUS_OCI.xml`](src/FOCUS_OCI.xml) | Log Analytics `FOCUS_OCI` parser and source export |
 | [`src/FinOps_MC.json`](src/FinOps_MC.json) | `FinOps_MC` dashboard export; six tiles and six saved searches |
-| [`terraform/`](terraform/) | Resource Manager-ready infrastructure stack and AWS curation function |
+| [`terraform/`](terraform/) | Resource Manager-ready OCI stack: bucket, Log Analytics imports, policies, stream, and live collection rule |
 | [`terraform/finops-mc-oci-stack.zip`](terraform/finops-mc-oci-stack.zip) | Deployable OCI Resource Manager package |
 
 ## Deploy on Oracle Cloud
 
-[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://raw.githubusercontent.com/esciunzi/projects/finOpsMC/FinopsMlticloud/terraform/finops-mc-oci-stack.zip)
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/esciunzi/projects/raw/refs/heads/finOpsMC/FinopsMlticloud/terraform/finops-mc-oci-stack.zip)
 
 The button opens OCI Resource Manager's **Create stack** page using the published stack ZIP from the `finOpsMC` branch.
+
+### Actions performed by the stack
+
+- Creates a private, event-enabled OCI Object Storage bucket for AWS FOCUS reports.
+- Onboards Oracle Log Analytics and creates a dedicated FOCUS log group.
+- Imports the packaged `FOCUS_AWS` parser and source plus the `FinOps_MC` dashboard and saved searches.
+- Creates the OCI Streaming resource, dynamic group, and IAM policies required for live Object Storage collection.
+- Enables a LIVE Object Collection Rule that ingests files under the configured bucket prefix with the `FOCUS_AWS` source.
+
+It does not create AWS resources, cross-cloud credentials, Functions, Lambda jobs, or report-export automation. Uploading or transferring FOCUS reports to the OCI bucket remains outside this stack.
 
 ## References
 
