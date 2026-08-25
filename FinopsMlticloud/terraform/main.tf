@@ -30,8 +30,9 @@ data "archive_file" "focus_oci_content" {
 }
 
 resource "oci_log_analytics_namespace" "finops" {
-  namespace      = local.oci_namespace
-  compartment_id = var.compartment_ocid
+  namespace = local.oci_namespace
+  # Log Analytics onboarding is scoped to the tenancy, not a child compartment.
+  compartment_id = var.tenancy_ocid
   is_onboarded   = true
 }
 
