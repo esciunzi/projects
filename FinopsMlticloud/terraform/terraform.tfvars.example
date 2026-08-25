@@ -1,0 +1,12 @@
+aws_region             = "eu-west-1"
+aws_source_bucket_name = "my-aws-focus-export"
+aws_source_prefix      = "focus/"
+
+oci_region                 = "eu-frankfurt-1"
+tenancy_ocid               = "ocid1.tenancy.oc1..example"
+compartment_ocid           = "ocid1.compartment.oc1..example"
+oci_ingest_bucket_name     = "finops-aws-focus"
+oci_par_expiration_rfc3339 = "2027-08-25T00:00:00Z"
+oci_admin_group_name       = "FinOpsAdministrators"
+target_lag_days            = 1
+
