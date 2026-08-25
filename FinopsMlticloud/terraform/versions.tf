@@ -1,5 +1,6 @@
 terraform {
-  required_version = ">= 1.6.0"
+  # OCI Resource Manager currently supports the Terraform 1.5.x release line.
+  required_version = ">= 1.5.0, < 1.6.0"
 
   required_providers {
     archive = {

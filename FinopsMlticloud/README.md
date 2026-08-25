@@ -77,6 +77,8 @@ The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping whe
 
 The button opens OCI Resource Manager's **Create stack** page using the published stack ZIP from the `finOpsMC` branch.
 
+The stack is pinned to Terraform 1.5.x, the currently supported Resource Manager release line.
+
 ### Actions performed by the stack
 
 - Creates a private, event-enabled OCI Object Storage bucket for AWS FOCUS reports.
