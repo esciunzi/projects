@@ -4,7 +4,7 @@ This project centralizes AWS and OCI FOCUS cost and usage data in Oracle Log Ana
 
 ![Oracle multicloud FinOps dashboard](img/finops-dashboard.png)
 
-*Multicloud dashboard. Image © Oracle, linked from the referenced blog post.*
+*Multicloud dashboard 
 
 
 Multicloud cost management is difficult when providers expose different account hierarchies, service names, SKUs, regions, and tags. FOCUS provides a common cost and usage specification; Oracle Log Analytics turns that data into one searchable and visual FinOps layer.
