@@ -3,8 +3,9 @@ data "oci_objectstorage_namespace" "current" {
 }
 
 locals {
-  oci_namespace = coalesce(var.oci_namespace, data.oci_objectstorage_namespace.current.namespace)
-  ingest_prefix = trimsuffix(var.oci_ingest_prefix, "/")
+  oci_namespace     = coalesce(var.oci_namespace, data.oci_objectstorage_namespace.current.namespace)
+  aws_ingest_prefix = trimsuffix(var.aws_ingest_prefix, "/")
+  oci_ingest_prefix = trimsuffix(var.oci_ingest_prefix, "/")
   dashboard_import_ids = {
     dashboard_id                              = "ocid1.managementdashboard.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     saved_search_compartment_service_usage_id = "ocid1.managementsavedsearch.oc1..aaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
@@ -14,6 +15,17 @@ locals {
     saved_search_compartment_service_id       = "ocid1.managementsavedsearch.oc1..aaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffff"
     saved_search_service_line_id              = "ocid1.managementsavedsearch.oc1..aaaaaaaagggggggggggggggggggggggggggggggggggggggggggggggggggg"
   }
+}
+
+# Preserve state from the earlier single-bucket version of this stack.
+moved {
+  from = oci_objectstorage_bucket.finops
+  to   = oci_objectstorage_bucket.aws_focus
+}
+
+moved {
+  from = oci_streaming_stream.object_collection
+  to   = oci_streaming_stream.aws_object_collection
 }
 
 # The parser export is packaged with the Resource Manager stack. Log Analytics
@@ -47,7 +59,15 @@ resource "oci_log_analytics_namespace" "finops" {
   is_onboarded   = true
 }
 
-resource "oci_objectstorage_bucket" "finops" {
+resource "oci_objectstorage_bucket" "aws_focus" {
+  compartment_id        = var.compartment_ocid
+  name                  = var.aws_ingest_bucket_name
+  namespace             = local.oci_namespace
+  access_type           = "NoPublicAccess"
+  object_events_enabled = true
+}
+
+resource "oci_objectstorage_bucket" "oci_focus" {
   compartment_id        = var.compartment_ocid
   name                  = var.oci_ingest_bucket_name
   namespace             = local.oci_namespace
@@ -55,9 +75,16 @@ resource "oci_objectstorage_bucket" "finops" {
   object_events_enabled = true
 }
 
-resource "oci_streaming_stream" "object_collection" {
+resource "oci_streaming_stream" "aws_object_collection" {
   compartment_id     = var.compartment_ocid
-  name               = "${var.name_prefix}-object-collection"
+  name               = "${var.name_prefix}-aws-object-collection"
+  partitions         = 1
+  retention_in_hours = 48
+}
+
+resource "oci_streaming_stream" "oci_object_collection" {
+  compartment_id     = var.compartment_ocid
+  name               = "${var.name_prefix}-oci-object-collection"
   partitions         = 1
   retention_in_hours = 48
 }
@@ -138,16 +165,36 @@ resource "oci_log_analytics_log_analytics_object_collection_rule" "aws_focus" {
   name                = "${var.name_prefix}-aws-focus"
   description         = "Collect AWS FOCUS CSV and CSV.GZ reports from Object Storage"
   os_namespace        = local.oci_namespace
-  os_bucket_name      = oci_objectstorage_bucket.finops.name
+  os_bucket_name      = oci_objectstorage_bucket.aws_focus.name
   log_group_id        = oci_log_analytics_log_analytics_log_group.finops.id
   log_source_name     = "FOCUS_AWS"
   collection_type     = "LIVE"
-  stream_id           = oci_streaming_stream.object_collection.id
+  stream_id           = oci_streaming_stream.aws_object_collection.id
   stream_cursor_type  = "LATEST"
-  object_name_filters = ["${local.ingest_prefix}/*"]
+  object_name_filters = ["${local.aws_ingest_prefix}/*"]
 
   depends_on = [
     oci_identity_policy.object_collection_service,
     oci_log_analytics_log_analytics_import_custom_content.focus_aws
+  ]
+}
+
+resource "oci_log_analytics_log_analytics_object_collection_rule" "oci_focus" {
+  namespace           = local.oci_namespace
+  compartment_id      = var.compartment_ocid
+  name                = "${var.name_prefix}-oci-focus"
+  description         = "Collect OCI FOCUS CSV and CSV.GZ reports from Object Storage"
+  os_namespace        = local.oci_namespace
+  os_bucket_name      = oci_objectstorage_bucket.oci_focus.name
+  log_group_id        = oci_log_analytics_log_analytics_log_group.finops.id
+  log_source_name     = "FOCUS_OCI"
+  collection_type     = "LIVE"
+  stream_id           = oci_streaming_stream.oci_object_collection.id
+  stream_cursor_type  = "LATEST"
+  object_name_filters = ["${local.oci_ingest_prefix}/*"]
+
+  depends_on = [
+    oci_identity_policy.object_collection_service,
+    oci_log_analytics_log_analytics_import_custom_content.focus_oci
   ]
 }

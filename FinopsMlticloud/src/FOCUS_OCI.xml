@@ -1224,7 +1224,7 @@
    <Source configWarningSettings="0" name="FOCUS_OCI" oms_version="3.127.1.0.0">
       <SourceType>os_file</SourceType>
       <TargetTypes>
-         <TargetType>omc_host_linux</TargetType>
+         <TargetType>oci_os_bucket</TargetType>
       </TargetTypes>
       <DisplayName>FOCUS_OCI</DisplayName>
       <IsSystem>0</IsSystem>

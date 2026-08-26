@@ -32,15 +32,26 @@ variable "onboard_log_analytics" {
   default     = false
 }
 
+variable "aws_ingest_bucket_name" {
+  description = "Name for the new private OCI bucket that receives AWS FOCUS reports."
+  type        = string
+}
+
+variable "aws_ingest_prefix" {
+  description = "Object-name prefix the AWS FOCUS collection rule monitors."
+  type        = string
+  default     = "aws-focus"
+}
+
 variable "oci_ingest_bucket_name" {
-  description = "Name for the new private OCI bucket that receives FOCUS reports."
+  description = "Name for the new private OCI bucket that receives OCI FOCUS reports."
   type        = string
 }
 
 variable "oci_ingest_prefix" {
-  description = "Object-name prefix the live Object Storage rule monitors."
+  description = "Object-name prefix the OCI FOCUS collection rule monitors."
   type        = string
-  default     = "aws-focus"
+  default     = "oci-focus"
 }
 
 variable "oci_admin_group_name" {
