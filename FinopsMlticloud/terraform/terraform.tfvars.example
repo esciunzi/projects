@@ -4,3 +4,4 @@ compartment_ocid       = "ocid1.compartment.oc1..example"
 oci_ingest_bucket_name = "finops-aws-focus"
 oci_ingest_prefix      = "aws-focus"
 oci_admin_group_name   = "FinOpsAdministrators"
+onboard_log_analytics  = false

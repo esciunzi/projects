@@ -76,7 +76,7 @@ Normalized field model in OCI_Focus Source
 ### Actions performed by the stack
 
 - Creates a private, event-enabled OCI Object Storage bucket for AWS FOCUS reports.
-- Onboards Oracle Log Analytics and creates a dedicated FOCUS log group.
+- Creates a dedicated FOCUS log group in Oracle Log Analytics. Set `onboard_log_analytics` to `true` only when the tenancy has not already been onboarded.
 - Imports the packaged `FOCUS_AWS` and `FOCUS_OCI` parsers and sources plus the `FinOps_MC` dashboard and saved searches.
 - Creates the OCI Streaming resource, dynamic group, and IAM policies required for live Object Storage collection.
 - Enables a LIVE Object Collection Rule that ingests files under the configured bucket prefix with the `FOCUS_AWS` source.

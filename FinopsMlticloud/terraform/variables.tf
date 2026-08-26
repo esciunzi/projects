@@ -26,6 +26,12 @@ variable "oci_namespace" {
   nullable    = true
 }
 
+variable "onboard_log_analytics" {
+  description = "Set to true only when Log Analytics is not already onboarded for the tenancy."
+  type        = bool
+  default     = false
+}
+
 variable "oci_ingest_bucket_name" {
   description = "Name for the new private OCI bucket that receives FOCUS reports."
   type        = string
