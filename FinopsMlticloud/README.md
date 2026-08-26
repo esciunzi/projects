@@ -84,7 +84,8 @@ Normalized field model in OCI_Focus Source
 It does not create AWS resources, cross-cloud credentials, Functions, Lambda jobs, or report-export automation. Uploading or transferring FOCUS reports to the OCI bucket remains outside this stack.
 
 ## References
-
+- [Export AWS Focus Report on OCI Bucket](https://github.com/oracle-devrel/technology-engineering/tree/main/oci-and-db/foundation/observability-and-management/log-analytics/finops/aws-focus-to-oci-object-storage)
+- [Export OCI Focus Report on OCI Bucket]([https://blogs.oracle.com/observability/monitor-finops-multicloud-oracle-log-analytics](https://github.com/mikarinneoracle/oci_usage_reports?tab=readme-ov-file#deployment-scenarios))
 - [Monitoring FinOps Data Across Multicloud with Oracle Log Analytics](https://blogs.oracle.com/observability/monitor-finops-multicloud-oracle-log-analytics)
 - [Observability for AWS FinOps Data with Oracle Log Analytics](https://blogs.oracle.com/observability/observability-aws-finops-data-oracle-log-analytics)
 - [FOCUS specification](https://focus.finops.org/)
