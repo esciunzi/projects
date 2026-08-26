@@ -4,7 +4,7 @@ This project centralizes AWS and OCI FOCUS cost and usage data in Oracle Log Ana
 
 ![Oracle multicloud FinOps dashboard](img/finops-dashboard.png)
 
-*Multicloud dashboard 
+Multicloud dashboard 
 
 
 Multicloud cost management is difficult when providers expose different account hierarchies, service names, SKUs, regions, and tags. FOCUS provides a common cost and usage specification; Oracle Log Analytics turns that data into one searchable and visual FinOps layer.
@@ -15,11 +15,11 @@ The dashboard also supports cost-driver analysis, anomaly investigation, and env
 
 ![Oracle cost anomaly view](img/cost-anomaly.png)
 
-*Cost anomaly analysis. Image © Oracle, supplied from the referenced blog post.*
+Cost anomaly analysis
 
 ![Oracle Logan AI view](img/logan-ai.gif)
 
-*Natural-language exploration with Logan AI. Image © Oracle, linked from the referenced blog post.*
+Natural-language exploration with Logan AI
 
 ##  Architecture
 
@@ -29,7 +29,7 @@ The AWS FOCUS report lands in OCI Object Storage, where the `FOCUS_AWS` source a
 
 ![Oracle reference architecture](img/architecture.png)
 
-*Reference architecture
+Reference architecture
 
 ![Oracle consumption widget](img/consumption-widget.png)
 
@@ -58,7 +58,7 @@ The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping whe
 
 ![Oracle normalized FinOps fields](img/normalized-finops-fields.png)
 
-*Normalized field model in OCI_Focus Source
+Normalized field model in OCI_Focus Source
 
 ## Included Assets
 
@@ -74,9 +74,6 @@ The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping whe
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/esciunzi/projects/raw/refs/heads/finOpsMC/FinopsMlticloud/terraform/finops-mc-oci-stack.zip)
 
-The button opens OCI Resource Manager's **Create stack** page using the published stack ZIP from the `finOpsMC` branch.
-
-The stack is pinned to Terraform 1.5.x, the currently supported Resource Manager release line.
 
 ### Actions performed by the stack
 
