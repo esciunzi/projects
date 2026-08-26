@@ -6,7 +6,6 @@ This project centralizes AWS and OCI FOCUS cost and usage data in Oracle Log Ana
 
 *Multicloud dashboard. Image © Oracle, linked from the referenced blog post.*
 
-## Business Value
 
 Multicloud cost management is difficult when providers expose different account hierarchies, service names, SKUs, regions, and tags. FOCUS provides a common cost and usage specification; Oracle Log Analytics turns that data into one searchable and visual FinOps layer.
 
@@ -22,21 +21,21 @@ The dashboard also supports cost-driver analysis, anomaly investigation, and env
 
 *Natural-language exploration with Logan AI. Image © Oracle, linked from the referenced blog post.*
 
-## Dashboard Architecture
+##  Architecture
 
-AWS Billing and Cost Management Data Exports publish FOCUS data to Amazon S3. Make the required FOCUS CSV or CSV.GZ files available in the private OCI Object Storage bucket created by this stack. The stack deliberately does not create an AWS function, scheduled job, cross-cloud credential, or data-transformation path; report delivery to OCI is owned by the existing export process.
+AWS Billing and OCI Cost Management Data Exports publish FOCUS data. Make the required FOCUS CSV or CSV.GZ files available in the private OCI Object Storage bucket created by this stack. The stack deliberately does not create an AWS function, scheduled job, cross-cloud credential, or data-transformation path; report delivery to OCI is owned by the existing export process.
 
 The AWS FOCUS report lands in OCI Object Storage, where the `FOCUS_AWS` source and a Log Analytics object collection rule ingest it. OCI FOCUS data is parsed through `FOCUS_OCI`. Both providers then use the same normalized model beneath the `FinOps_MC` dashboard.
 
 ![Oracle reference architecture](img/architecture.png)
 
-*Reference architecture. Image © Oracle, linked from the referenced blog post.*
+*Reference architecture
 
 ![Oracle consumption widget](img/consumption-widget.png)
 
-*Consumption widget. Image © Oracle, supplied from the referenced blog post.*
+Consumption widget 
 
-The Terraform stack in [`terraform/`](terraform/) creates the OCI Object Storage bucket, onboards Log Analytics, imports `FOCUS_AWS` and the `FinOps_MC` dashboard, grants the required OCI policies, and enables a live Object Storage collection rule. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
+The Terraform stack in [`terraform/`](terraform/) creates the OCI Object Storage bucket, onboards Log Analytics, imports `FOCUS_AWS`, FOCUS_OCI and the `FinOps_MC` dashboard, grants the required OCI policies, and enables a live Object Storage collection rule. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
 
 ## Normalization Fields
 
@@ -59,7 +58,7 @@ The OCI parser includes `MC_GROUP`; add an equivalent AWS allocation mapping whe
 
 ![Oracle normalized FinOps fields](img/normalized-finops-fields.png)
 
-*Normalized field model. Image © Oracle, linked from the referenced blog post.*
+*Normalized field model in OCI_Focus Source
 
 ## Included Assets
 
