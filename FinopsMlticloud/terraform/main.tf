@@ -5,6 +5,15 @@ data "oci_objectstorage_namespace" "current" {
 locals {
   oci_namespace = coalesce(var.oci_namespace, data.oci_objectstorage_namespace.current.namespace)
   ingest_prefix = trimsuffix(var.oci_ingest_prefix, "/")
+  dashboard_import_ids = {
+    dashboard_id                              = "ocid1.managementdashboard.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    saved_search_compartment_service_usage_id = "ocid1.managementsavedsearch.oc1..aaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    saved_search_consumption_analysis_id      = "ocid1.managementsavedsearch.oc1..aaaaaaaacccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    saved_search_anomaly_consumption_id       = "ocid1.managementsavedsearch.oc1..aaaaaaaadddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    saved_search_top_service_words_id         = "ocid1.managementsavedsearch.oc1..aaaaaaaaeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    saved_search_compartment_service_id       = "ocid1.managementsavedsearch.oc1..aaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    saved_search_service_line_id              = "ocid1.managementsavedsearch.oc1..aaaaaaaagggggggggggggggggggggggggggggggggggggggggggggggggggg"
+  }
 }
 
 # The parser export is packaged with the Resource Manager stack. Log Analytics
@@ -77,7 +86,11 @@ resource "oci_log_analytics_log_analytics_import_custom_content" "focus_oci" {
 }
 
 resource "oci_management_dashboard_management_dashboards_import" "finops_mc" {
-  import_details_file                    = "${path.module}/content/FinOps_MC.json"
+  import_details = templatefile("${path.module}/content/FinOps_MC.json", merge({
+    target_tenancy_id     = var.tenancy_ocid
+    target_compartment_id = var.compartment_ocid
+    oci_region            = var.oci_region
+  }, local.dashboard_import_ids))
   override_dashboard_compartment_ocid    = var.compartment_ocid
   override_saved_search_compartment_ocid = var.compartment_ocid
   override_same_name                     = "true"
