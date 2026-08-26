@@ -35,8 +35,6 @@ Reference architecture
 
 Consumption widget 
 
-The Terraform stack in [`terraform/`](terraform/) creates the OCI Object Storage bucket, onboards Log Analytics, imports `FOCUS_AWS`, FOCUS_OCI and the `FinOps_MC` dashboard, grants the required OCI policies, and enables a live Object Storage collection rule. The Log Analytics content exports remain in [`src/`](src/) as portable imports.
-
 ## Normalization Fields
 
 The parsers map each provider report to stable `MC_*` fields. This separates the dashboard from provider-specific report versions, optional fields, and extensions.
